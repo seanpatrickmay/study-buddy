@@ -95,6 +95,14 @@ async def process_pdfs(
                 p.unlink()
         raise HTTPException(status_code=500, detail=str(e))
 
+def cleanup_file(file_path: Path):
+    """Clean up uploaded file after processing"""
+    try:
+        if file_path.exists():
+            file_path.unlink()
+    except Exception as e:
+        print(f"Error cleaning up file {file_path}: {e}")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
@@ -104,11 +112,3 @@ if __name__ == "__main__":
         reload=True,
         log_level="info"
     )
-
-    def cleanup_file(file_path: Path):
-        """Clean up uploaded file after processing"""
-        try:
-            if file_path.exists():
-                file_path.unlink()
-        except Exception as e:
-            print(f"Error cleaning up file {file_path}: {e}")
