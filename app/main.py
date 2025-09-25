@@ -14,6 +14,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from app.config.config import settings
 from app.utils.pipeline import StudyPipeline
 
+from typing import List
+
 # Create FastAPI app
 app = FastAPI(
     title="Study Material Generator",

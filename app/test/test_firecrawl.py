@@ -123,7 +123,7 @@ def test_local_pdf_processing():
     try:
         from app.utils.pdf_processor import PDFProcessor
         
-        test_pdf = Path("test.pdf")
+        test_pdf = Path("test2.pdf")
         
         if not test_pdf.exists():
             print("⚠️  No test.pdf found. Downloading sample...")
@@ -187,7 +187,7 @@ def download_sample_pdf():
     url = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
     response = requests.get(url)
     
-    with open("test.pdf", "wb") as f:
+    with open("test2.pdf", "wb") as f:
         f.write(response.content)
     print("✅ Downloaded test.pdf")
 
@@ -201,7 +201,7 @@ async def test_pipeline():
         pipeline = StudyPipeline()
         print("✅ Pipeline initialized")
         
-        test_pdf = Path("test.pdf")
+        test_pdf = Path("test2.pdf")
         
         if not test_pdf.exists():
             print("⚠️  No test.pdf found. Downloading...")
