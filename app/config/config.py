@@ -13,6 +13,13 @@ class Settings(BaseSettings):
     firecrawl_api_key: Optional[str] = Field(None, env='FIRECRAWL_API_KEY')
     anthropic_api_key: Optional[str] = Field(None, env='ANTHROPIC_API_KEY')
     
+    # Tavily Settings (for LangChain-Tavily)
+    tavily_search_depth: str = Field("basic", env='TAVILY_SEARCH_DEPTH')  # basic or advanced
+    tavily_max_results: int = Field(3, env='TAVILY_MAX_RESULTS')
+    tavily_include_answer: bool = Field(True, env='TAVILY_INCLUDE_ANSWER')
+    tavily_include_raw_content: bool = Field(False, env='TAVILY_INCLUDE_RAW_CONTENT')
+    tavily_rate_limit: int = Field(100, env='TAVILY_RATE_LIMIT')
+    
     # Model Configuration
     llm_model: str = Field('gpt-4-turbo-preview', env='LLM_MODEL')
     llm_temperature: float = Field(0.7, env='LLM_TEMPERATURE')
