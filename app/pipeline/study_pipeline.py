@@ -3,6 +3,7 @@ from app.agents.flashcard_agent import flashcard_agent, flashcard_task
 from app.utils.firecrawl_handler import FirecrawlHandler
 from app.utils.pipeline_handler import VectorDBHandler
 import os
+from typing import List
 
 class StudyPipeline:
     def __init__(self):
