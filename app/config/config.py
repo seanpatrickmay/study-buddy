@@ -12,6 +12,17 @@ class Settings(BaseSettings):
     tavily_api_key: str = Field(..., env='TAVILY_API_KEY')
     firecrawl_api_key: Optional[str] = Field(None, env='FIRECRAWL_API_KEY')
     anthropic_api_key: Optional[str] = Field(None, env='ANTHROPIC_API_KEY')
+
+    # Firecrawl Settings
+    firecrawl_max_urls: int = Field(5, env='FIRECRAWL_MAX_URLS')
+
+    # Vector Database Settings
+    vector_db_path: Path = Field(Path("./chroma_db"), env='VECTOR_DB_PATH')
+    embedding_model: str = Field('text-embedding-ada-002', env='EMBEDDING_MODEL')
+
+    # RAG Settings
+    chunk_size: int = Field(1000, env='CHUNK_SIZE')
+    chunk_overlap: int = Field(200, env='CHUNK_OVERLAP')
     
     # Tavily Settings (for LangChain-Tavily)
     tavily_search_depth: str = Field("basic", env='TAVILY_SEARCH_DEPTH')  # basic or advanced
