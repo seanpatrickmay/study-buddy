@@ -2,146 +2,138 @@ from crewai import Crew
 from app.agents.flashcard_agent import flashcard_agent, flashcard_task
 
 mock_markdown = """
-# Organic Chemistry Study Guide
+# Star Wars Study Guide
 
-Compiled notes from multiple sources on **Organic Chemistry** for exam prep.
-
----
-
-## 1. Fundamentals of Organic Chemistry
-
-### Structure and Bonding
-- **Carbon Valency**: Carbon has 4 valence electrons, forming 4 covalent bonds.
-- **Hybridization**:
-  - sp³: Tetrahedral (109.5° bond angle).
-  - sp²: Trigonal planar (120° bond angle).
-  - sp: Linear (180° bond angle).
-- **Electronegativity**: Influences bond polarity and reactivity.
-
-### Resonance
-- Molecules with conjugated systems can delocalize electrons.
-- Example: Benzene has 6 π electrons spread evenly across the ring.
-
-### Acid-Base Concepts
-- **Bronsted-Lowry acid**: Proton donor.
-- **Bronsted-Lowry base**: Proton acceptor.
-- Organic acids often contain -COOH, while bases contain -NH₂ groups.
+Compiled notes from multiple documents on **Star Wars** lore, characters, and technology.
 
 ---
 
-## 2. Functional Groups
+## 1. Galactic History
 
-### Alkanes
-- Saturated hydrocarbons with single bonds.
-- General formula: CₙH₂ₙ₊₂.
-- Nonpolar, undergo combustion.
+### The Old Republic
+- Existed thousands of years before the Galactic Empire.
+- Constantly at war with the Sith.
+- Known for Jedi-led armies and democratic institutions.
 
-### Alkenes
-- Unsaturated hydrocarbons with C=C double bonds.
-- Undergo **electrophilic addition reactions**.
-- Markovnikov’s rule: “The rich get richer” (H adds to carbon with more hydrogens).
+### The Clone Wars
+- Conflict between the Galactic Republic and the Confederacy of Independent Systems (Separatists).
+- Clones were created from bounty hunter Jango Fett.
+- Led to the rise of Palpatine’s power.
 
-### Alkynes
-- Unsaturated hydrocarbons with C≡C triple bonds.
-- Terminal alkynes are acidic (pKa ~25).
+### The Galactic Empire
+- Founded by Sheev Palpatine after declaring himself Emperor.
+- Dissolved the Republic Senate.
+- Used fear, the Death Star, and Imperial military to maintain control.
 
-### Alcohols
-- Contain -OH group.
-- Classified as primary, secondary, or tertiary depending on carbon attachment.
-- Can undergo oxidation:
-  - 1° alcohol → aldehyde → carboxylic acid
-  - 2° alcohol → ketone
-  - 3° alcohol → resistant to oxidation
+### The Rebel Alliance
+- A coalition of freedom fighters resisting the Empire.
+- Leaders: Mon Mothma, Bail Organa, Princess Leia.
+- Victory at the Battle of Yavin destroyed the first Death Star.
 
-### Aldehydes and Ketones
-- Both contain a carbonyl group (C=O).
-- Aldehydes: Carbonyl at end of chain.
-- Ketones: Carbonyl within chain.
-- Reactivity: Nucleophilic addition (e.g., reduction to alcohols).
-
-### Carboxylic Acids
-- Contain -COOH.
-- Strong hydrogen bonding, high boiling point.
-- React with bases to form salts.
-
-### Amines
-- Derived from ammonia (NH₃).
-- Classified as primary, secondary, tertiary.
-- Basic due to lone pair on nitrogen.
-
-### Aromatic Compounds
-- Benzene and derivatives.
-- Stabilized by resonance (aromaticity).
-- Undergo **electrophilic aromatic substitution**:
-  - Nitration
-  - Halogenation
-  - Sulfonation
-  - Friedel-Crafts alkylation/acylation
+### The New Republic and the First Order
+- New Republic replaced the Empire after the Battle of Endor.
+- First Order emerged from remnants of the Imperial fleet.
+- Resistance formed to oppose the First Order, led by Leia Organa.
 
 ---
 
-## 3. Organic Reactions
+## 2. The Force and Jedi Philosophy
 
-### Substitution Reactions
-- **SN1**:
-  - Two-step (carbocation intermediate).
-  - Rate depends only on substrate.
-  - Favored in polar protic solvents.
-- **SN2**:
-  - One-step (backside attack).
-  - Rate depends on both substrate and nucleophile.
-  - Favored in polar aprotic solvents.
+### The Force
+- An energy field created by all living things.
+- Divided into the **Light Side** and **Dark Side**.
+- Jedi follow the Light; Sith embrace the Dark.
 
-### Elimination Reactions
-- **E1**: Two-step, carbocation intermediate.
-- **E2**: One-step, strong base required.
-- Zaitsev’s Rule: More substituted alkene is favored.
+### Jedi Order
+- Guardians of peace and justice.
+- Known for lightsabers, discipline, and selflessness.
+- Famous Jedi: Yoda, Obi-Wan Kenobi, Anakin Skywalker, Luke Skywalker.
 
-### Addition Reactions
-- Alkenes and alkynes undergo addition of HX, X₂, H₂O, etc.
-- Catalytic hydrogenation converts alkenes → alkanes.
+### Sith
+- Dark Side users seeking power and domination.
+- Rule of Two: a master and an apprentice.
+- Famous Sith Lords: Darth Sidious (Palpatine), Darth Vader, Darth Maul.
 
-### Oxidation and Reduction
-- Oxidation: Increases bonds to oxygen or decreases bonds to hydrogen.
-- Reduction: Increases bonds to hydrogen or decreases bonds to oxygen.
-- Common reagents:
-  - Oxidation: KMnO₄, CrO₃, PCC.
-  - Reduction: LiAlH₄, NaBH₄, catalytic hydrogenation.
+### Prophecies
+- The “Chosen One” would bring balance to the Force.
+- Interpreted as Anakin Skywalker, though balance was debated.
 
 ---
 
-## 4. Spectroscopy and Structure Elucidation
+## 3. Major Characters
 
-### Infrared (IR) Spectroscopy
-- Identifies functional groups by bond vibrations.
-- Key peaks:
-  - O-H stretch: broad, ~3300 cm⁻¹
-  - C=O stretch: sharp, ~1700 cm⁻¹
-  - C-H stretch: ~2900 cm⁻¹
+### Luke Skywalker
+- Farm boy from Tatooine, trained as a Jedi by Obi-Wan and Yoda.
+- Destroyed the Death Star at Yavin.
+- Redeemed his father, Anakin Skywalker.
 
-### Nuclear Magnetic Resonance (NMR)
-- **¹H NMR**:
-  - Chemical shift depends on electron environment.
-  - Integration shows number of protons.
-  - Splitting follows n+1 rule.
-- **¹³C NMR**:
-  - Provides number of unique carbon environments.
-  - Quaternary carbons appear weaker.
+### Darth Vader (Anakin Skywalker)
+- Jedi Knight turned Sith Lord.
+- Fell to the Dark Side under Palpatine’s influence.
+- Ultimately sacrificed himself to destroy the Emperor and save Luke.
 
-### Mass Spectrometry (MS)
-- Measures molecular weight and fragmentation pattern.
-- Base peak = most intense fragment.
-- M⁺ peak = molecular ion.
+### Princess Leia Organa
+- Senator, Rebel leader, and twin sister of Luke.
+- Strong with the Force, later trained as a Jedi.
+- Led the Resistance against the First Order.
+
+### Han Solo
+- Smuggler turned hero.
+- Pilot of the Millennium Falcon.
+- Partnered with Chewbacca, friend of Luke and Leia.
+
+### Yoda
+- Jedi Grand Master for centuries.
+- Small in stature but incredibly powerful in the Force.
+- Known for wisdom and cryptic speech patterns.
 
 ---
 
-## 5. Study Tips and Common Mistakes
+## 4. Technology and Starships
 
-- Don’t forget to consider resonance stabilization in carbocations.
-- Watch out for **stereochemistry** in SN2 (always inversion of configuration).
-- In elimination reactions, check if Hofmann product (less substituted) might be favored with bulky bases.
-- IR peaks around 1700 cm⁻¹ almost always indicate a carbonyl.
-- Practice drawing full mechanisms, not just products.
+### Lightsabers
+- Energy swords wielded by Jedi and Sith.
+- Powered by kyber crystals.
+- Colors often symbolize alignment: blue/green (Jedi), red (Sith).
+
+### The Death Star
+- Moon-sized space station and superweapon.
+- Capable of destroying entire planets.
+- Two were constructed; both destroyed by the Rebels.
+
+### Millennium Falcon
+- Corellian YT-1300 freighter modified by Han Solo.
+- Known for speed, agility, and smuggling compartments.
+- Made the Kessel Run in less than twelve parsecs.
+
+### X-Wing Starfighter
+- Primary starfighter of the Rebel Alliance.
+- Known for versatility and proton torpedoes.
+- Luke Skywalker flew an X-Wing in the Battle of Yavin.
+
+### TIE Fighters
+- Standard Imperial starfighters.
+- No shields or hyperdrive; mass-produced.
+- Recognized by their twin ion engines and screeching sound.
+
+---
+
+## 5. Key Battles
+
+- **Battle of Yavin**: Rebels destroyed the first Death Star.
+- **Battle of Hoth**: Imperial victory, Rebels evacuated the ice planet.
+- **Battle of Endor**: Rebels destroyed the second Death Star, Palpatine defeated.
+- **Battle of Starkiller Base**: Resistance destroyed the First Order’s superweapon.
+
+---
+
+## 6. Study Tips for Star Wars Trivia
+
+- Remember the chronology: Republic → Empire → Rebellion → New Republic → First Order.
+- The Rule of Two always applies to Sith: one master, one apprentice.
+- Lightsaber colors often hint at allegiance, but not always.
+- Many starships are named for animals (X-Wing, TIE Fighter, Star Destroyer).
+- Family relationships drive much of the saga’s plot (Anakin → Luke & Leia → Ben Solo).
 
 ---
 
