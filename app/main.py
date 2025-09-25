@@ -14,6 +14,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from app.config.config import settings
 from app.utils.pipeline import StudyPipeline
 
+from typing import List
+
 # Create FastAPI app
 app = FastAPI(
     title="Study Material Generator",
@@ -133,6 +135,95 @@ async def root():
         "documentation": "/docs",
         "health": "/health"
     }
+
+
+@app.post("/add-to-database")
+async def add_to_database(
+    file: UploadFile = File(...)
+):
+    """Add a PDF to the vector database without generating materials immediately"""
+    
+    if not file.filename.endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported")
+    
+    file_id = str(uuid.uuid4())
+    file_path = settings.upload_dir / f"{file_id}_{file.filename}"
+    
+    try:
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        # Add to database only
+        result = await pipeline.process_pdf(str(file_path), add_to_db_only=True)
+        
+        return JSONResponse(content=result)
+        
+    finally:
+        if file_path.exists():
+            file_path.unlink()
+
+@app.post("/process-multiple")
+async def process_multiple_pdfs(
+    files: List[UploadFile] = File(...)
+):
+    """Process multiple PDFs (up to 5) and create unified study materials"""
+    
+    if len(files) > 5:
+        raise HTTPException(status_code=400, detail="Maximum 5 files allowed")
+    
+    saved_paths = []
+    
+    try:
+        # Save all files
+        for file in files:
+            if not file.filename.endswith('.pdf'):
+                continue
+            
+            file_id = str(uuid.uuid4())
+            file_path = settings.upload_dir / f"{file_id}_{file.filename}"
+            
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+            saved_paths.append(str(file_path))
+        
+        # Process all PDFs
+        result = await pipeline.process_multiple_pdfs(saved_paths)
+        
+        return JSONResponse(content=result)
+        
+    finally:
+        # Clean up files
+        for path in saved_paths:
+            if Path(path).exists():
+                Path(path).unlink()
+
+@app.get("/database-info")
+async def database_info():
+    """Get information about the vector database"""
+    info = pipeline.get_database_info()
+    return JSONResponse(content=info)
+
+@app.post("/generate-from-database")
+async def generate_from_database():
+    """Generate study materials from all files in the database"""
+    
+    try:
+        materials = await pipeline._generate_study_materials()
+        output_files = pipeline._save_outputs(materials)
+        
+        return JSONResponse(content={
+            "status": "success",
+            "files": output_files,
+            "database_info": pipeline.get_database_info()
+        })
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/clear-database")
+async def clear_database():
+    """Clear the entire vector database"""
+    pipeline.clear_database()
+    return {"status": "success", "message": "Database cleared"}
 
 def cleanup_file(file_path: Path):
     """Clean up uploaded file after processing"""
