@@ -1,0 +1,14 @@
+[
+  { "front": "What is the Big-O time complexity of binary search?", "back": "O(log n)", "tags": ["cs", "algorithms"], "id": "cs-001" },
+  { "front": "Define a stack.", "back": "LIFO data structure. Push adds to top; pop removes top.", "tags": ["cs", "data-structures"] },
+  { "front": "Define a queue.", "back": "FIFO data structure: enqueue at rear, dequeue at front.", "tags": ["cs", "data-structures"], "id": "cs-003" },
+  { "front": "Pythagorean theorem", "back": "a^2 + b^2 = c^2", "tags": ["math", "geometry"] },
+  { "front": "Derivative of sin(x)", "back": "cos(x)", "tags": ["math", "calculus"] },
+  { "front": "Newton’s Second Law", "back": "F = m·a", "tags": ["physics"] },
+  { "front": "HTTP 404 means?", "back": "Not Found — the server can’t find the requested resource.", "tags": ["web", "http"] },
+  { "front": "SQL: INNER JOIN vs LEFT JOIN", "back": "INNER: rows matching in both tables. LEFT: all rows from left table, NULLs when no right-side match.", "tags": ["databases", "sql"] },
+  { "front": "What does DNS do?", "back": "Resolves human-readable domain names to IP addresses.", "tags": ["networking"] },
+  { "front": "Git: rebase vs merge", "back": "Merge keeps a merge commit; rebase rewrites commits onto a new base for a linear history.", "tags": ["devtools", "git"], "id": "git-001" },
+  { "front": "What does idempotent mean (HTTP)?", "back": "Multiple identical requests have the same effect as one (e.g., GET, PUT, DELETE).", "tags": ["web", "http"] },
+  { "front": "Reminder about cloze", "back": "Use Anki’s Cloze model for {{c1::cloze deletions}} (not used with this Basic model).", "tags": ["anki"] }
+]
