@@ -10,9 +10,11 @@ flashcard_agent = Agent(
 
 flashcard_task = Task(
     description=(
-        "Take the provided Markdown notes and output JSON flashcards. "
+        "Take the following Markdown notes:\n\n{markdown}\n\n"
         "Each flashcard must follow this schema: "
-        "[{'id': 'card_001', 'front': '...', 'back': '...'}]"
+        "[{'id': 'card_001', 'front': '...', 'back': '...'}, 'tags: ['tag1', 'tag2']}]\n"
+        "- 'tags' is always an array of strings.\n"
+        "- Tags should be short topic labels (e.g., 'Data Structures', 'Algorithms').\n"
         "Do not fabricate information"
         ""
     ),

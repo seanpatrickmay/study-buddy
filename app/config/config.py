@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-from pydantic import Field, validator
+from pydantic import Field, field_validator
 from typing import Optional, List
 from pathlib import Path
 import os
@@ -48,18 +48,18 @@ class Settings(BaseSettings):
     enable_caching: bool = Field(True, env='ENABLE_CACHING')
     cache_ttl: int = Field(3600, env='CACHE_TTL')
     
-    @validator('upload_dir', 'output_dir', 'temp_dir')
-    def create_directories(cls, v):
+    @field_validator('upload_dir', 'output_dir', 'temp_dir')
+    def create_directories(cls, v: Path):
         """Ensure directories exist"""
         v = Path(v)
         v.mkdir(parents=True, exist_ok=True)
         return v
-    
-    @validator('openai_api_key', 'tavily_api_key')
-    def validate_required_keys(cls, v, field):
+
+    @field_validator('openai_api_key', 'tavily_api_key')
+    def validate_required_keys(cls, v: str, info):
         """Validate required API keys"""
-        if not v or v == "sk-..." or v == "tvly-...":
-            raise ValueError(f"{field.name} must be set in .env file")
+        if not v or v in ["sk-...", "tvly-..."]:
+            raise ValueError(f"{info.field_name} must be set in .env file")
         return v
     
     class Config:
