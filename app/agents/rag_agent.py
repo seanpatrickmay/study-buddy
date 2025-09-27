@@ -1,23 +1,36 @@
 from crewai import Agent, Task
 import os
 from typing import List
-from langchain_community.vectorstores import Chroma
+try:
+    from langchain_chroma import Chroma
+except ImportError:
+    from langchain_community.vectorstores import Chroma
 from langchain_openai import OpenAIEmbeddings
 from langchain.tools import tool
 from tavily import TavilyClient
 import chromadb
 
-client = chromadb.HttpClient(host="http://localhost", port=8000)
-    
-_embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-
-_vs = Chroma(client=client, embedding_function=_embeddings)
-_retriever = _vs.as_retriever(search_kwargs={"k": 4})
+# Initialize embeddings only if OpenAI API key is available
+_openai_key = os.environ.get("OPENAI_API_KEY")
+if _openai_key:
+    _embeddings = OpenAIEmbeddings(model="text-embedding-3-small", openai_api_key=_openai_key)
+    # Use persistent directory instead of HTTP client to avoid port conflicts
+    _vs = Chroma(
+        collection_name="study_bot",
+        persist_directory="./chroma_db",
+        embedding_function=_embeddings
+    )
+    _retriever = _vs.as_retriever(search_kwargs={"k": 4})
+else:
+    _embeddings = None
+    _vs = None
+    _retriever = None
 
 # Initialize Tavily client (optional if API key missing)
 _tavily_key = os.environ.get("TAVILY_API_KEY")
 _tavily = TavilyClient(api_key=_tavily_key) if _tavily_key else None
 
+@tool("tavily_search", return_direct=False)
 def _tavily_search(query: str, max_results: int = 5):
     """Search the web with Tavily and return a list of result dicts."""
     if _tavily is None:
@@ -53,7 +66,7 @@ search_agent = Agent(
     role="Tavily Web Searcher",
     goal="Find and summarize relevant information from the web.",
     backstory="Expert at quickly finding and summarizing web content via Tavily",
-    tools=[_tavily_search],
+    tools=[],
     allow_delegation=False
 )
 
@@ -68,6 +81,8 @@ search_task = Task(
 
 def _format_docs(docs: List):
     """Render retrieved docs as compact Markdown with source hints."""
+    if not docs:
+        return "No results."
     lines = []
     for i, d in enumerate(docs, start=1):
         meta = getattr(d, "metadata", {}) or {}
@@ -87,7 +102,7 @@ def _format_docs(docs: List):
 
 def _upsert_texts_to_chroma(items: List[dict]) -> int:
     """Upsert Tavily items into Chroma, returning number added."""
-    if not items:
+    if not items or _vs is None:
         return 0
     texts = []
     metadatas = []
@@ -126,8 +141,11 @@ def _auto_enrich_from_web(query: str, max_results: int = 5) -> str:
 def enrich_from_web(query: str) -> str:
     """
     Use Tavily to research the query, upsert results into Chroma, and return a brief summary.
-    Requires TAVILY_API_KEY to be set.
+    Requires TAVILY_API_KEY and OPENAI_API_KEY to be set.
     """
+    if _retriever is None:
+        return "Vector database not initialized. Please set OPENAI_API_KEY."
+
     status = _auto_enrich_from_web(query)
     # Optionally re-query to preview what's now in the DB
     docs = _retriever.get_relevant_documents(query)
@@ -140,6 +158,9 @@ def chroma_search(query: str) -> str:
     Retrieve passages from Chroma related to the query. If none are found, automatically
     enrich the DB via Tavily and retry, then return the results.
     """
+    if _retriever is None:
+        return "Vector database not initialized. Please set OPENAI_API_KEY."
+
     docs = _retriever.get_relevant_documents(query)
     if docs:
         return _format_docs(docs)
@@ -159,7 +180,7 @@ web_enricher_agent = Agent(
         "A diligent web researcher that consults reputable sources via Tavily, "
         "distills concise snippets, and updates the Chroma knowledge base."
     ),
-    tools=[enrich_from_web],
+    tools=[],
     verbose=True,
     allow_delegation=False,
 )
@@ -172,7 +193,7 @@ rag_agent = Agent(
         "When results are insufficient, it calls on a companion agent that searches the web "
         "and updates the database, then retries retrieval."
     ),
-    tools=[chroma_search, enrich_from_web],
+    tools=[],
     verbose=True,
     allow_delegation=True,
 )

@@ -34,16 +34,13 @@ class FirecrawlHandler:
     def process_local_pdf(self, pdf_path: Path) -> Dict:
         """
         Process a local PDF file.
-        Falls back to local processing since Firecrawl needs URLs
+        Note: Firecrawl requires URLs, so this returns failure to trigger fallback to local processing
         """
-        from app.utils.pdf_processor import PDFProcessor
-        processor = PDFProcessor()
-        markdown = processor.pdf_to_markdown(pdf_path)
         return {
-            'success': True,
-            'markdown': markdown,
+            'success': False,
+            'error': 'Firecrawl requires URLs, not local files',
             'source_path': str(pdf_path),
-            'metadata': {}
+            'requires_fallback': True
         }
     
     def batch_process(self, sources: List[str]) -> List[Dict]:

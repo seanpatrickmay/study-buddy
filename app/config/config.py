@@ -18,7 +18,7 @@ class Settings(BaseSettings):
 
     # Vector Database Settings
     vector_db_path: Path = Field(Path("./chroma_db"), env='VECTOR_DB_PATH')
-    embedding_model: str = Field('text-embedding-ada-002', env='EMBEDDING_MODEL')
+    embedding_model: str = Field('text-embedding-3-small', env='EMBEDDING_MODEL')
 
     # RAG Settings
     chunk_size: int = Field(1000, env='CHUNK_SIZE')
@@ -55,7 +55,6 @@ class Settings(BaseSettings):
     anki_deck_id: int = Field(2059400110, env='ANKI_DECK_ID')
     
     # Rate Limiting
-    tavily_rate_limit: int = Field(100, env='TAVILY_RATE_LIMIT')
     enable_caching: bool = Field(True, env='ENABLE_CACHING')
     cache_ttl: int = Field(3600, env='CACHE_TTL')
     

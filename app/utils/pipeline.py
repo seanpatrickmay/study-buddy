@@ -7,7 +7,10 @@ import json
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from langchain_community.vectorstores import Chroma
+try:
+    from langchain_chroma import Chroma
+except ImportError:
+    from langchain_community.vectorstores import Chroma
 from langchain.chains import RetrievalQA
 from langchain.schema import Document
 
@@ -365,3 +368,14 @@ class StudyPipeline:
         output_files['markdown'] = str(md_path)
         
         return output_files
+
+    async def process_pdfs(self, file_paths: List[str], anki_export_path: Optional[str] = None) -> Dict:
+        """
+        Process multiple PDF files using the complete workflow.
+        This method is used by the FastAPI endpoint.
+        """
+        from app.utils.study_workflow import StudyWorkflow
+
+        # Use the new complete workflow
+        workflow = StudyWorkflow()
+        return await workflow.process_study_materials(file_paths, anki_export_path)

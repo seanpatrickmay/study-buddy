@@ -15,6 +15,7 @@ Output JSON shape:
 """
 
 import argparse, datetime as dt, json, math, os, shutil, sqlite3, tempfile, zipfile
+from typing import Optional
 
 US = "\x1f"  # Anki field separator
 
@@ -53,17 +54,32 @@ def parse_window(since: str | None, days: int | None) -> tuple[int, dict]:
         return ts, {"since_ms": ts, "since_date": since, "filter": "since_date"}
     return 0, {"since_ms": 0, "since_date": None, "filter": "all"}
 
-def difficulty_score(again: int, hard: int, good: int, easy: int, last_ms: int, now_ms: int) -> float:
+def difficulty_score(again: int, hard: int, good: int, easy: int, last_ms: Optional[int], now_ms: int) -> float:
     """
     Recency-aware score. Higher = more difficult.
-    You can tweak weights as desired.
+    Maps the result smoothly into the range [-10, 10].
+
+    Behavior notes:
+    - If last_ms is None (no history), returns 0.0.
+    - The internal raw score follows your original weighting:
+        raw = (again * 3.0 + hard * 1.5 - good * 0.25 - easy * 0.5) * recency
+    - `recency` is ~=1.5 when very recent, ~=1.0 when old (same as your original).
+    - The final scaled score = 10 * tanh(raw / 3.0) which compresses the result into [-10,10].
+      The divisor 3.0 is a tunable scale parameter — increase to compress more aggressively,
+      decrease to let raw values map closer to +/-10.
     """
     if last_ms is None:
         return 0.0
+
     days_since = max(0.0, (now_ms - last_ms) / 86400000.0)
-    # Recent misses push the score more than old ones.
-    recency = 1.0 + 0.5 * (1.0 / (1.0 + math.exp(-(3.0 - days_since))))  # ~1.5 if very recent, ~1.0 if old
-    return round((again * 3.0 + hard * 1.5 - good * 0.25 - easy * 0.5) * recency, 3)
+    recency = 1.0 + 0.5 * (1.0 / (1.0 + math.exp(-(3.0 - days_since))))
+    raw = (again * 3.0 + hard * 1.5 - good * 0.25 - easy * 0.5) * recency
+
+    # Smoothly compress into [-10, 10]. Adjust 'scale' if you want different sensitivity.
+    scale = 3.0
+    scaled = 10.0 * math.tanh(raw / scale)
+
+    return round(scaled, 3)
 
 def split_tags(tag_blob: str) -> list[str]:
     # Anki stores tags as a space-separated string with leading/trailing spaces.
