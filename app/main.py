@@ -18,8 +18,8 @@ from app.utils.study_workflow import StudyWorkflow
 
 # Create FastAPI app
 app = FastAPI(
-    title="Study Material Generator",
-    description="Transform PDFs into comprehensive study materials with CrewAI agents",
+    title="Study Buddy API",
+    description="Two-step study workflow: PDFs to Anki decks, Anki exports to personalised cheat sheets.",
     version="2.0.0"
 )
 
@@ -42,7 +42,7 @@ templates = Jinja2Templates(directory="templates")
 workflow = StudyWorkflow()
 
 # Create necessary directories
-for dir_path in [settings.upload_dir, settings.output_dir, settings.temp_dir]:
+for dir_path in [settings.upload_dir, settings.output_dir]:
     dir_path.mkdir(parents=True, exist_ok=True)
 
 @app.get("/", response_class=HTMLResponse)

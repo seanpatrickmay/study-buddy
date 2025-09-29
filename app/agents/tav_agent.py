@@ -2,9 +2,11 @@
 from crewai import Agent, Task
 
 extraction_agent = Agent(
-    role="Extraction Agent",
-    goal="Turn a markdown document into another markdown document that contains key ideas and vocabulary",
-    backstory="Expert at extracting key ideas and vocabulary from educational content.",
+    role="Document Extraction Specialist",
+    goal="Capture key ideas and vocabulary strictly from the supplied notes",
+    backstory=(
+        "You carefully transcribe structure from study materials without inventing or embellishing."
+    ),
     verbose=True,
     allow_delegation=False
 )
@@ -17,6 +19,7 @@ extraction_task = Task(
         "divide the key ideas into main ideas and supporting details\n"
         "extract vocabulary terms along with their definitions\n"
         "output must not contain any other information except the key ideas and vocabulary\n"
+        "if a definition is missing in the notes, write 'NOT_FOUND' instead of guessing\n"
         "and information must be from the inputted markdown exclusively\n"
         "ensure that key ideas and vocabulary are clearly separated by headings and a newline\n"
     ),
@@ -25,24 +28,25 @@ extraction_task = Task(
 )
 
 verification_agent = Agent(
-    role="Verification Agent",
-    goal="Watches over the extraction agent to ensure output accuracy and relevance and supply missing information",
-    backstory="Expert of educational content and ensuring information accuracy.",
+    role="Consistency Reviewer",
+    goal="Ensure the extracted notes match the source exactly without inventing content",
+    backstory=(
+        "You double-check that every statement is grounded in the provided notes and never add new facts."
+    ),
     verbose=True,
     allow_delegation=False,
 )
 
 verification_task = Task(
     description=(
-        "Watch over the extraction agent to ensure output accuracy and relevance\n"
-        "if information is missing or seems inaccurate, supply the missing information\n"
-        "based on your expertise in educational content\n"
+        "Review the extraction for strict fidelity to the provided markdown.\n"
+        "Do not add outside knowledge.\n"
+        "If a definition is missing, leave 'NOT_FOUND' in place so downstream tools can fetch it via web search.\n"
     ),
     expected_output="Valid markdown file, with vocabular terms and key ideas clearly stated",
     agent=verification_agent,
     context=[extraction_task]
 )
-
 
 
 

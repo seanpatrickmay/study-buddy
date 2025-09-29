@@ -2,16 +2,19 @@ from crewai import Agent, Task
 
 cheatsheet_agent = Agent(
     role="Cheatsheet Generator",
-    goal="Convert JSON flashcards into a one page reference sheet for a test, prioritizing harder concepts",
-    backstory="Expert at summarizing and organizing information for quick reference. Familiar with LaTeX, A4 formatting, and compact cheat-sheet design for grad/professional audience.",
+    goal="Convert JSON flashcards into a one page reference sheet without inventing new facts",
+    backstory=(
+        "You build study aids only from the information provided in the flashcards or explicitly attributed web-search snippets."
+        "When something is unclear you leave space for downstream enrichment rather than guessing."
+    ),
     verbose=True,
     allow_delegation=True
 )
 
 cheatsheet_task = Task(
     description=(
-        "Take the provided JSON flashcards:\n\n{flashcards}\n\n"
-        "Convert the provided JSON flashcards into a compact, single-page LaTeX cheatsheet (A4 paper). "
+        "Take the provided JSON payload (keys: 'template', 'topics', 'supplementary_notes', 'guidelines'):\n\n{flashcards}\n\n"
+        "Convert the flashcards grouped under 'topics' into a compact, single-page LaTeX cheatsheet (A4 paper). "
         "Output must be the full contents of a single valid .tex file and nothing else (no extra commentary, no plaintext explanation). "
         "The agent should produce a single LaTeX document that compiles with common engines (pdfLaTeX or LuaLaTeX/XeLaTeX); "
         "list any non-standard packages used at the top of the .tex file in a TeX comment.\n\n"
@@ -39,8 +42,11 @@ cheatsheet_task = Task(
         "- Output must be only the exact LaTeX source of the cheatsheet (.tex). Do not output anything else.\n"
         "- The document must be self-contained (no external images, no external file includes).\n"
         "- The generated LaTeX should declare the packages it uses at the top.\n"
-        "- Organize the cheatsheet into topic sections based on tags, with the hardest items first in each section.\n"
-        "- Reformat and summarize flashcard content; do not invent facts.\n\n"
+        "- Organize the cheatsheet into topic sections based on the provided 'topics'. Use the provided 'template' structure for column layout.\n"
+        "- Reformat and summarize flashcard content; do not invent facts.\n"
+        "- Ignore difficulty scores or meta-guidance; include only subject matter content.\n"
+        "- Supplement with 'supplementary_notes' only when they reinforce flashcard content, citing sources inline.\n"
+        "- Ensure all three columns are filled; expand explanations or add examples from the available material if space remains.\n\n"
 
         "Use this template structure:\n"
         "\\documentclass[8pt] plus extarticle class\n"
