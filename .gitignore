@@ -22,12 +22,17 @@ ENV/
 *~
 
 # Project specific
-uploads/
 outputs/
+uploads/
 temp/
+chroma_db/
 *.apkg
-*.pdf
-*.log
+
+# Tooling caches
+.ruff_cache/
+.mypy_cache/
+dist/
+build/
 
 # Testing
 .pytest_cache/
