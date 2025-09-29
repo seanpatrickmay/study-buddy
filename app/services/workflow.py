@@ -90,24 +90,21 @@ class StudyWorkflow:
         if anki_export_path:
             difficulty_payload = self._anki_reader.parse(Path(anki_export_path))
             cheat_sheet_terms = self._terms_from_anki(difficulty_payload)
-        else:
-            cheat_sheet_terms = key_terms
-
-        cheat_sheet_latex = await self._cheatsheet_builder.build(
-            cards=flashcards,
-            key_terms=cheat_sheet_terms,
-            documents=documents,
-        )
-        tex_path = self._output_dir / "cheat_sheet.tex"
-        artefacts.cheat_sheet = CheatSheetBuilder.save(
-            cheat_sheet_latex,
-            tex_path,
-        )
-        try:
-            pdf_path = self._latex_compiler.compile(tex_path)
-            artefacts.cheat_sheet_pdf = pdf_path
-        except Exception as err:
-            print(f"Failed to compile cheat sheet to PDF: {err}")
+            cheat_sheet_latex = await self._cheatsheet_builder.build(
+                cards=flashcards,
+                key_terms=cheat_sheet_terms,
+                documents=documents,
+            )
+            tex_path = self._output_dir / "cheat_sheet.tex"
+            artefacts.cheat_sheet = CheatSheetBuilder.save(
+                cheat_sheet_latex,
+                tex_path,
+            )
+            try:
+                pdf_path = self._latex_compiler.compile(tex_path)
+                artefacts.cheat_sheet_pdf = pdf_path
+            except Exception as err:
+                print(f"Failed to compile cheat sheet to PDF: {err}")
 
         summary_markdown = await self._summarise(documents)
         if summary_markdown:
@@ -252,6 +249,7 @@ class StudyWorkflow:
                     "term": front,
                     "definition": back,
                     "context": "",
+                    "difficulty_score": item.get("difficulty_score", 0.0),
                 }
             )
         return terms
@@ -268,11 +266,14 @@ class StudyWorkflow:
                 or definition.lower() in {"not_found", "n/a", "missing", "unknown"}
                 or len(definition) < 25
             )
+            difficulty = term.get("difficulty_score")
             if needs_search:
                 query = f"{term.get('term')} definition concise high-quality"
                 summary = self._web_search_agent.search_summary(query, max_results=3, max_chars=360)
                 if summary:
                     term = {**term, "definition": summary.strip(), "definition_source": "tavily"}
+                    if difficulty is not None:
+                        term["difficulty_score"] = difficulty
             enriched.append(term)
         return enriched
 
@@ -294,12 +295,14 @@ class StudyWorkflow:
             ).strip()
             tags = self._sanitise_tags((term.get("tags") or []), context)
             back = definition if not context else f"{definition}\n\nContext: {context}"
+            difficulty = term.get("difficulty_score")
             cards.append(
                 Flashcard(
                     front=name,
                     back=back,
                     tags=sorted(tags),
                     identifier=f"anki-{index:03d}",
+                    difficulty=difficulty,
                 )
             )
         return cards

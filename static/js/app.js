@@ -76,7 +76,14 @@ class StudyBuddy {
         if (!incoming.length) {
             return;
         }
-        this.pdfFiles = this._mergeFiles(this.pdfFiles, incoming);
+        const filtered = incoming.filter((file) => this._isAllowedStudyFile(file));
+        if (filtered.length !== incoming.length) {
+            this.showToast('Only PDF, PPT, and PPTX files are supported', 'error');
+        }
+        if (!filtered.length) {
+            return;
+        }
+        this.pdfFiles = this._mergeFiles(this.pdfFiles, filtered);
         this.renderPdfList();
         this.syncPdfInput();
         this.updateDeckControls();
@@ -407,6 +414,11 @@ class StudyBuddy {
             }
         });
         return Array.from(map.values());
+    }
+
+    _isAllowedStudyFile(file) {
+        const ext = file.name.split('.').pop()?.toLowerCase() || '';
+        return ['pdf', 'ppt', 'pptx'].includes(ext);
     }
 }
 

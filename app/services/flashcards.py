@@ -37,6 +37,7 @@ class FlashcardGenerator:
             definition = (term.get("definition") or "").strip()
             term_name = (term.get("term") or "").strip()
             context = (term.get("context") or "").strip()
+            difficulty = term.get("difficulty_score")
             if not term_name or not definition:
                 continue
 
@@ -52,6 +53,7 @@ class FlashcardGenerator:
                     back=back,
                     tags=sorted(tags),
                     identifier=f"sb-{index:03d}",
+                    difficulty=difficulty,
                 )
             )
         return cards

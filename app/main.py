@@ -92,11 +92,16 @@ async def process_pdfs(
     if not files and not anki_export:
         raise HTTPException(status_code=400, detail="Please provide either PDF files or an Anki export file")
 
-    # Process PDF files (if any)
+    allowed_extensions = {".pdf", ".ppt", ".pptx"}
+
+    # Process study files (if any)
     for file in files:
-        # Validate type
-        if not file.filename.endswith(".pdf"):
-            raise HTTPException(status_code=400, detail=f"{file.filename} is not a PDF")
+        suffix = Path(file.filename).suffix.lower()
+        if suffix not in allowed_extensions:
+            raise HTTPException(
+                status_code=400,
+                detail=f"{file.filename} has an unsupported format. Allowed: PDF, PPT, PPTX",
+            )
 
         # Generate unique ID and save
         file_id = str(uuid.uuid4())

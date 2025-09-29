@@ -7,6 +7,7 @@ from typing import Iterable, List, Optional
 
 from pypdf import PdfReader
 
+from app.services.conversion import StudyConverter
 from app.services.firecrawl import FirecrawlClient
 from app.services.models import DocumentBundle
 
@@ -32,6 +33,7 @@ class DocumentLoader:
 
     def __init__(self, firecrawl_api_key: Optional[str]) -> None:
         self._firecrawl = FirecrawlClient(api_key=firecrawl_api_key)
+        self._converter = StudyConverter(PdfMarkdownExtractor.extract, self._html_to_markdown)
 
     async def load_many(self, sources: Iterable[str]) -> List[DocumentBundle]:
         """Load every provided source into a :class:`DocumentBundle`."""
@@ -59,10 +61,13 @@ class DocumentLoader:
         if not path.exists():
             raise FileNotFoundError(f"Document not found: {raw_source}")
 
-        markdown = await asyncio.to_thread(PdfMarkdownExtractor.extract, path)
-        return DocumentBundle(
-            source_path=path,
-            display_name=path.name,
-            markdown=markdown,
-            metadata={"ingestion": "local"},
-        )
+        bundle = await asyncio.to_thread(self._converter.convert, path)
+        bundle.metadata.setdefault("ingestion", "local")
+        return bundle
+
+    @staticmethod
+    def _html_to_markdown(path: Path) -> str:
+        from markdownify import markdownify
+
+        html = path.read_text(encoding="utf-8")
+        return markdownify(html, heading_style="ATX")

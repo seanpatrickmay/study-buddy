@@ -50,7 +50,7 @@ app/
 
 The `StudyWorkflow` class (now in `app/services/workflow.py`) coordinates the entire lifecycle:
 
-1. Convert PDFs or URLs into markdown (`DocumentLoader`).
+1. Convert PDFs, PowerPoint decks, or URLs into markdown (`DocumentLoader`).
 2. Persist content in Chroma for later RAG lookups (`VectorStoreManager`).
 3. Ask CrewAI agents to extract key terms and author extra flashcards.
 4. Build flashcards, Anki decks, LaTeX/PDF cheat sheets, and summaries.

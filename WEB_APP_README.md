@@ -1,10 +1,10 @@
 # Study Buddy Web Interface
 
-A lightweight front end for Study Buddy that mirrors the two-step workflow: build an Anki deck from PDFs, then upload your Anki export to generate a difficulty-aware cheat sheet.
+A lightweight front end for Study Buddy that mirrors the two-step workflow: build an Anki deck from PDFs or PowerPoint decks, then upload your Anki export to generate a difficulty-aware cheat sheet.
 
 ## Key Concepts
 
-1. **Generate Deck** – Upload one or more PDFs. Study Buddy extracts key terms, creates flashcards, and packages them into an `.apkg` deck alongside a JSON export.
+1. **Generate Deck** – Upload one or more PDFs or PPT/PPTX files. Study Buddy extracts key terms, creates flashcards, and packages them into an `.apkg` deck alongside a JSON export.
 2. **Refine with Anki** – After studying in Anki, export the deck (with scheduling information) and upload the `.apkg`. Study Buddy analyses the review history and provides a focused cheat sheet.
 
 ## Prerequisites
@@ -31,7 +31,7 @@ Visit `http://localhost:8000` for the UI or `http://localhost:8000/docs` for the
 ## Using the Interface
 
 ### Step 1 – Build Your Deck
-1. Select one or more PDF files.
+1. Select one or more PDF or PowerPoint files (.pdf, .ppt, .pptx).
 2. Click **Generate deck**.
 3. Download the generated `.apkg`, optional flashcard JSON, and the cheat sheet in both LaTeX and PDF formats when ready.
 4. Import the deck into Anki and study as usual.

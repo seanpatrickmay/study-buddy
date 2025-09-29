@@ -29,6 +29,7 @@ class Flashcard:
     back: str
     tags: List[str] = field(default_factory=list)
     identifier: Optional[str] = None
+    difficulty: Optional[float] = None
 
 
 @dataclass(slots=True)
