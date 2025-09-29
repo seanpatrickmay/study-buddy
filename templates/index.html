@@ -3,148 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Study Bot - AI-Powered Study Material Generator</title>
+    <title>Study Buddy</title>
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@2.0.6/css/pico.min.css">
     <link rel="stylesheet" href="/static/css/style.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-<body>
-    <div class="container">
-        <header class="header">
-            <div class="header-content">
-                <h1><i class="fas fa-brain"></i> Study Bot</h1>
-                <p>Transform your PDFs into comprehensive study materials using AI</p>
-            </div>
-        </header>
+<body class="page">
+    <header class="hero">
+        <div>
+            <h1>Study Buddy</h1>
+            <p class="hero-subtitle">Build an Anki deck from PDFs, then refine it with your review history.</p>
+        </div>
+        <span class="badge">v2</span>
+    </header>
 
-        <main class="main-content">
-            <!-- Upload Section -->
-            <section class="upload-section" id="upload-section">
-                <div class="upload-card">
-                    <div class="upload-icon">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                    </div>
-                    <h2>Upload Your Study Materials</h2>
-                    <p>Upload PDF files to generate flashcards, summaries, and study guides</p>
+    <main class="grid-flow">
+        <article class="panel" aria-labelledby="deck-heading">
+            <header class="panel-header">
+                <span class="step">1</span>
+                <div>
+                    <h2 id="deck-heading">Build your deck</h2>
+                    <p>Upload PDFs to generate flashcards and an Anki package.</p>
+                </div>
+            </header>
 
-                    <div class="file-upload-area" id="file-upload-area">
-                        <input type="file" id="file-input" multiple accept=".pdf" hidden>
-                        <div class="upload-prompt">
-                            <i class="fas fa-file-pdf"></i>
-                            <span>Drag & drop PDFs here or <button type="button" class="browse-btn" onclick="document.getElementById('file-input').click()">browse files</button></span>
-                        </div>
-                        <div class="file-list" id="file-list"></div>
-                    </div>
+            <section class="panel-body">
+                <div class="stack">
+                    <label for="pdf-input" class="secondary outline file-trigger" role="button">Select study files</label>
+                    <input type="file" id="pdf-input" accept=".pdf,.ppt,.pptx" multiple hidden>
+                    <button type="button" class="secondary" id="pdf-clear" hidden>Clear list</button>
+                    <small class="hint">Supported: PDF, PPT, PPTX · up to 50&nbsp;MB per file</small>
+                </div>
 
-                    <div class="anki-upload-section">
-                        <h3><i class="fas fa-brain"></i> Optional: Upload Anki Export</h3>
-                        <p>Upload your Anki deck export (.apkg) to prioritize difficult terms in the cheat sheet</p>
-                        <input type="file" id="anki-input" accept=".apkg" hidden>
-                        <div class="anki-upload-area" id="anki-upload-area">
-                            <div class="upload-prompt">
-                                <i class="fas fa-brain"></i>
-                                <span>Drop Anki export here or <button type="button" class="browse-btn" onclick="document.getElementById('anki-input').click()">browse</button></span>
-                            </div>
-                            <div class="anki-file" id="anki-file"></div>
-                        </div>
-                    </div>
+                <ul class="file-list" id="pdf-list" aria-live="polite"></ul>
 
-                    <div class="upload-controls">
-                        <button id="process-btn" class="btn btn-primary" disabled>
-                            <i class="fas fa-cogs"></i> Process Documents
-                        </button>
-                        <button id="clear-btn" class="btn btn-secondary">
-                            <i class="fas fa-trash"></i> Clear Files
-                        </button>
-                    </div>
+                <div class="cluster">
+                    <button type="button" id="deck-run" class="contrast" disabled>Generate deck</button>
+                    <span class="spinner" id="deck-loader" hidden aria-hidden="true"></span>
+                </div>
+
+                <progress id="deck-progress" class="progress" value="0" max="100" hidden></progress>
+
+                <p class="status" id="deck-feedback" aria-live="polite"></p>
+
+                <div class="cluster wrap">
+                    <a id="deck-download" class="secondary outline" role="button" hidden>Download Anki deck (.apkg)</a>
+                    <a id="flashcards-download" class="secondary outline" role="button" hidden>Download flashcards (.json)</a>
+                    <a id="deck-cheatsheet-tex" class="secondary outline" role="button" hidden>Download cheat sheet (.tex)</a>
+                    <a id="deck-cheatsheet-pdf" class="secondary outline" role="button" hidden>Download cheat sheet (.pdf)</a>
                 </div>
             </section>
+        </article>
 
-            <!-- Progress Section -->
-            <section class="progress-section" id="progress-section" style="display: none;">
-                <div class="progress-card">
-                    <h3><i class="fas fa-spinner fa-spin"></i> Processing Documents...</h3>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progress-fill"></div>
-                    </div>
-                    <p id="progress-text">Preparing files...</p>
+        <article class="panel" aria-labelledby="anki-heading">
+            <header class="panel-header">
+                <span class="step">2</span>
+                <div>
+                    <h2 id="anki-heading">Refine with Anki</h2>
+                    <p>Upload your Anki export to receive a difficulty-aware cheat sheet.</p>
+                </div>
+            </header>
+
+            <section class="panel-body">
+                <div class="stack">
+                    <label for="anki-input" class="secondary outline file-trigger" role="button">Select Anki export</label>
+                    <input type="file" id="anki-input" accept=".apkg" hidden>
+                    <button type="button" class="secondary" id="anki-clear" hidden>Remove file</button>
+                    <small class="hint">Export from Anki with scheduling information included.</small>
+                    <small class="file-pill" id="anki-file" hidden></small>
+                </div>
+
+                <div class="cluster">
+                    <button type="button" id="anki-run" class="contrast" disabled>Generate cheat sheet</button>
+                    <span class="spinner" id="anki-loader" hidden aria-hidden="true"></span>
+                </div>
+
+                <progress id="anki-progress" class="progress" value="0" max="100" hidden></progress>
+
+                <p class="status" id="anki-feedback" aria-live="polite"></p>
+
+                <div class="cluster wrap">
+                    <a id="anki-cheatsheet-tex" class="secondary outline" role="button" hidden>Download cheat sheet (.tex)</a>
+                    <a id="anki-cheatsheet-pdf" class="secondary outline" role="button" hidden>Download cheat sheet (.pdf)</a>
                 </div>
             </section>
+        </article>
+    </main>
 
-            <!-- Results Section -->
-            <section class="results-section" id="results-section" style="display: none;">
-                <div class="results-header">
-                    <h2><i class="fas fa-graduation-cap"></i> Your Study Materials</h2>
-                    <button id="new-upload-btn" class="btn btn-secondary">
-                        <i class="fas fa-plus"></i> Process More Files
-                    </button>
-                </div>
-
-                <div class="results-content">
-                    <!-- Main Results Display - content populated by JavaScript based on processing type -->
-                    <div class="result-card" id="main-result-card">
-                        <div class="result-header" id="main-result-header">
-                            <!-- Header will be populated dynamically -->
-                        </div>
-                        <div class="result-content" id="main-result-content">
-                            <!-- Content will be populated dynamically -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Download Section -->
-                <div class="download-section">
-                    <h3><i class="fas fa-download"></i> Download Study Materials</h3>
-                    <div class="download-grid">
-                        <div class="download-item anki-download">
-                            <div class="download-icon">
-                                <i class="fas fa-brain"></i>
-                            </div>
-                            <div class="download-info">
-                                <h4>Anki Flashcard Deck</h4>
-                                <p>Ready-to-import flashcard package for Anki</p>
-                                <button id="anki-download-btn" class="download-btn primary" disabled>
-                                    <i class="fas fa-download"></i> Download .apkg
-                                </button>
-                            </div>
-                        </div>
-                        <div class="download-item">
-                            <div class="download-icon">
-                                <i class="fas fa-file-text"></i>
-                            </div>
-                            <div class="download-info">
-                                <h4>Study Guide</h4>
-                                <p>Comprehensive markdown study guide</p>
-                                <button id="study-guide-btn" class="download-btn secondary" disabled>
-                                    <i class="fas fa-download"></i> Download .md
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Error Section -->
-            <section class="error-section" id="error-section" style="display: none;">
-                <div class="error-card">
-                    <div class="error-icon">
-                        <i class="fas fa-exclamation-triangle"></i>
-                    </div>
-                    <h3>Processing Error</h3>
-                    <p id="error-message">An error occurred while processing your documents.</p>
-                    <button id="retry-btn" class="btn btn-primary">
-                        <i class="fas fa-redo"></i> Try Again
-                    </button>
-                </div>
-            </section>
-        </main>
-
-        <footer class="footer">
-            <p>&copy; 2024 Study Bot. Powered by AI for better learning.</p>
-        </footer>
-    </div>
-
-    <!-- Toast Notifications -->
-    <div id="toast-container"></div>
+    <footer class="footer">
+        <p>Uploads are temporary; generated artefacts are saved to <code>./outputs</code>.</p>
+    </footer>
 
     <script src="/static/js/app.js"></script>
 </body>
