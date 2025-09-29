@@ -1,0 +1,49 @@
+{
+  "languages": ["Python", "JavaScript", "HTML", "CSS"],
+  "primary_language": "Python",
+  "frameworks_detected": ["FastAPI", "CrewAI", "LangChain", "Chroma"],
+  "package_managers": ["pip"],
+  "test_commands": ["pytest", "python -m pytest"],
+  "ci_present": false,
+  "major_directories": [
+    {"name": "app", "purpose": "Main application code"},
+    {"name": "static", "purpose": "Web assets (CSS, JS)"},
+    {"name": "templates", "purpose": "HTML templates"},
+    {"name": "venv", "purpose": "Python virtual environment (should be in .gitignore)"},
+    {"name": "chroma_db", "purpose": "Vector database files (runtime data)"},
+    {"name": "uploads", "purpose": "User uploaded files (runtime data)"},
+    {"name": "outputs", "purpose": "Generated output files (runtime data)"}
+  ],
+  "total_loc_by_language": {
+    "python": 4570,
+    "javascript": "~500 (estimated from static/js/app.js)",
+    "html": "~200 (estimated from templates)",
+    "css": "~300 (estimated from static/css)"
+  },
+  "number_of_tests": 11,
+  "test_files_found": true,
+  "large_files": [
+    {"path": "./chroma_db/chroma.sqlite3", "size": "8.7M", "type": "database"}
+  ],
+  "binary_vendored_directories": [
+    {"path": "./venv", "should_be_gitignored": true, "reason": "Python virtual environment"},
+    {"path": "./chroma_db", "should_be_gitignored": true, "reason": "Runtime database files"},
+    {"path": "./uploads", "should_be_gitignored": true, "reason": "User uploaded content"},
+    {"path": "./outputs", "should_be_gitignored": true, "reason": "Generated files"}
+  ],
+  "config_files_found": {
+    "requirements.txt": true,
+    "pytest.ini": false,
+    "pyproject.toml": false,
+    "setup.cfg": false,
+    "editorconfig": false
+  },
+  "documentation_files": {
+    "README.md": true,
+    "WEB_APP_README.md": true,
+    "WORKFLOW_DOCUMENTATION.md": true,
+    "CONTRIBUTING.md": false,
+    "LICENSE": false,
+    "CODE_OF_CONDUCT.md": false
+  }
+}

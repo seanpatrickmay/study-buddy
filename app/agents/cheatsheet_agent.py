@@ -2,19 +2,21 @@ from crewai import Agent, Task
 
 cheatsheet_agent = Agent(
     role="Cheatsheet Generator",
-    goal="Convert JSON flashcards into a one page reference sheet for a test, prioritizing harder concepts",
-    backstory="Expert at summarizing and organizing information for quick reference. Familiar with LaTeX, A4 formatting, and compact cheat-sheet design for grad/professional audience.",
+    goal="Convert JSON flashcards into a one page reference sheet without inventing new facts",
+    backstory=(
+        "You build study aids only from the information provided in the flashcards or explicitly attributed web-search snippets."
+        "When something is unclear you leave space for downstream enrichment rather than guessing."
+    ),
     verbose=True,
     allow_delegation=True
 )
 
 cheatsheet_task = Task(
     description=(
-        "Take the provided JSON flashcards:\n\n{flashcards}\n\n"
-        "Convert the provided JSON flashcards into a compact, single-page LaTeX cheatsheet (A4 paper). "
-        "Output must be the full contents of a single valid .tex file and nothing else (no extra commentary, no plaintext explanation). "
-        "The agent should produce a single LaTeX document that compiles with common engines (pdfLaTeX or LuaLaTeX/XeLaTeX); "
-        "list any non-standard packages used at the top of the .tex file in a TeX comment.\n\n"
+        "Take the provided JSON payload (keys: 'template', 'topics', 'supplementary_notes', 'guidelines'):\n\n{flashcards}\n\n"
+        "Convert the flashcards grouped under 'topics' into a compact, single-page LaTeX cheatsheet (A4 paper). "
+        "Return only the LaTeX body snippet that belongs inside the supplied template (no documentclass, no begin/end document). "
+        "Ensure the snippet compiles cleanly once wrapped by the provided template.\n\n"
 
         "Target audience: graduate students / professionals. Prioritize harder concepts (higher numeric difficulty_score). "
         "The agent should treat the input as possibly being from any subject, and adapt formatting "
@@ -36,24 +38,15 @@ cheatsheet_task = Task(
         "- Prefer terse formulas/equations over prose. Use symbols and abbreviations freely, but ensure the glossary box defines them briefly.\n\n"
 
         "Formatting & output constraints:\n"
-        "- Output must be only the exact LaTeX source of the cheatsheet (.tex). Do not output anything else.\n"
-        "- The document must be self-contained (no external images, no external file includes).\n"
-        "- The generated LaTeX should declare the packages it uses at the top.\n"
-        "- Organize the cheatsheet into topic sections based on tags, with the hardest items first in each section.\n"
-        "- Reformat and summarize flashcard content; do not invent facts.\n\n"
-
-        "Use this template structure:\n"
-        "\\documentclass[8pt] plus extarticle class\n"
-        "\\usepackage[a4paper,margin=0.7cm] plus geometry package\n"
-        "\\usepackage multicol package\n"
-        "\\usepackage amsmath,amssymb packages\n"
-        "\\usepackage enumitem package\n"
-        "\\begin document\n"
-        "\\begin multicols*[3]\n"
-        "Content sections here...\n"
-        "\\end multicols*\n"
-        "\\end document"
+        "- Output must be only the LaTeX snippet for the cheat sheet body—no additional commentary.\n"
+        "- The snippet must rely solely on packages already loaded by the provided template (multicol, enumitem, amsmath, amssymb).\n"
+        "- Organize the cheat sheet into topic sections based on the provided 'topics'.\n"
+        "- Reformat and summarize flashcard content; do not invent facts or generic filler.\n"
+        "- Supplement with 'supplementary_notes' only when they reinforce flashcard content, citing sources inline.\n"
+        "- Ensure all three columns can be filled; expand explanations using the supplied material if space remains.\n\n"
+        "- Do not emit document wrappers (e.g., \\documentclass, \\begin\\{document\\}, \\begin\\{multicols*\\}); they are added later.\n\n"
+        "- The provided 'template' string includes spaces inside braces to avoid templating conflicts—remove those spaces if you reference it.\n\n"
     ),
-    expected_output="A single valid LaTeX .tex file source (only the tex contents, compilable).",
+    expected_output="A LaTeX snippet that can be inserted into the provided template to produce the cheat sheet.",
     agent=cheatsheet_agent
 )
