@@ -6,7 +6,7 @@ from typing import Iterable, List
 
 from langchain.schema import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_openai import OpenAIEmbeddings
+from langchain_core.embeddings import Embeddings
 
 try:  # pragma: no cover - optional import path changed in LangChain 0.2
     from langchain_chroma import Chroma
@@ -21,7 +21,7 @@ class VectorStoreManager:
 
     def __init__(
         self,
-        embeddings: OpenAIEmbeddings,
+        embeddings: Embeddings,
         persist_directory: Path,
         collection_name: str = "study_bot",
         chunk_size: int = 1_000,
@@ -32,11 +32,40 @@ class VectorStoreManager:
             chunk_overlap=chunk_overlap,
             separators=["\n\n", "\n", " "],
         )
-        self._vector_store = Chroma(
-            collection_name=collection_name,
-            persist_directory=str(persist_directory),
-            embedding_function=embeddings,
-        )
+
+        # Create collection name with embedding model suffix to avoid dimension conflicts
+        embedding_model_suffix = getattr(embeddings, 'model', 'unknown').replace('-', '_')
+        full_collection_name = f"{collection_name}_{embedding_model_suffix}"
+
+        try:
+            self._vector_store = Chroma(
+                collection_name=full_collection_name,
+                persist_directory=str(persist_directory),
+                embedding_function=embeddings,
+            )
+        except Exception as e:
+            error_msg = str(e).lower()
+            should_recreate = any(keyword in error_msg for keyword in [
+                "dimension", "_type", "configuration", "keyerror", "incompatible"
+            ])
+
+            if should_recreate:
+                print(f"Warning: Database compatibility issue detected. Recreating vector database.")
+                print(f"Error details: {e}")
+                import shutil
+                # Clear the old database and create new one
+                if persist_directory.exists():
+                    shutil.rmtree(persist_directory)
+                    persist_directory.mkdir(parents=True, exist_ok=True)
+
+                self._vector_store = Chroma(
+                    collection_name=full_collection_name,
+                    persist_directory=str(persist_directory),
+                    embedding_function=embeddings,
+                )
+                print(f"✓ New vector database created with collection: {full_collection_name}")
+            else:
+                raise
 
     def add_documents(self, bundles: Iterable[DocumentBundle]) -> int:
         """Chunk and ingest documents into the vector store."""

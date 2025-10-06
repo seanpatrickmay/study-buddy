@@ -9,7 +9,7 @@ This document summarises the refactored pipeline that powers Study Buddy. The im
 3. **Knowledge extraction** – `TermExtractor` collaborates with the CrewAI extraction and verification agents to enumerate key terms and their in-text definitions.
 4. **Flashcard synthesis** – `FlashcardGenerator` creates seed cards from the extracted terms and asks the CrewAI flashcard agent for additional coverage.
 5. **Artefact creation** – `AnkiDeckBuilder` turns the consolidated flashcards into a `.apkg` deck while the raw cards, key terms, and document metadata are persisted as JSON.
-6. **Cheat sheet + summary** – `CheatSheetBuilder` drives the cheatsheet Crew agent to output a LaTeX one-pager (optionally augmented by Tavily snippets), and the LangChain `ChatOpenAI` client produces a short study summary.
+6. **Cheat sheet + summary** – `CheatSheetBuilder` drives the cheatsheet Crew agent to output a LaTeX one-pager (optionally augmented by Tavily snippets), and the LangChain `ChatAnthropic` client produces a short study summary.
 
 All artefacts are written to `outputs/` and their paths are returned to the API caller.
 

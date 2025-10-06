@@ -117,7 +117,7 @@ async def process_materials(
     except HTTPException:
         raise
     except Exception as exc:  # pragma: no cover - defensive logging
-        LOGGER.exception("Failed to process study materials: %%s", exc)
+        LOGGER.exception("Failed to process study materials: %s", exc)
         for path in stored_files + ([anki_export_path] if anki_export_path else []):
             if path:
                 _delete_file(path)

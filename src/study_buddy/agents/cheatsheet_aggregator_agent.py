@@ -1,5 +1,10 @@
 from crewai import Agent, Task
 
+from study_buddy.agents import default_agent_llm
+
+
+_CHEATSHEET_AGGREGATOR_LLM = default_agent_llm()
+
 cheatsheet_aggregator_agent = Agent(
     role="Cheatsheet Synthesiser",
     goal="Merge multiple LaTeX cheat sheet drafts into a single, dense, three-column sheet without adding new facts",
@@ -11,6 +16,7 @@ cheatsheet_aggregator_agent = Agent(
     ),
     verbose=True,
     allow_delegation=False,
+    llm=_CHEATSHEET_AGGREGATOR_LLM,
 )
 
 cheatsheet_aggregator_task = Task(

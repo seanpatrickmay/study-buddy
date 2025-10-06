@@ -7,7 +7,7 @@ import re
 from typing import Iterable, List, Sequence
 
 from crewai import Crew
-from langchain_openai import ChatOpenAI
+from langchain_anthropic import ChatAnthropic
 
 from study_buddy.agents.tav_agent import (
     extraction_agent,
@@ -21,7 +21,7 @@ from study_buddy.core.models import DocumentBundle
 class TermExtractor:
     """Derive key terms and their definitions from markdown sources."""
 
-    def __init__(self, llm: ChatOpenAI, chunk_size: int = 6_000) -> None:
+    def __init__(self, llm: ChatAnthropic, chunk_size: int = 6_000) -> None:
         self._llm = llm
         self._chunk_size = chunk_size
 

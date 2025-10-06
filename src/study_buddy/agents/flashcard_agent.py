@@ -1,11 +1,17 @@
 from crewai import Agent, Task
 
+from study_buddy.agents import default_agent_llm
+
+
+_FLASHCARD_LLM = default_agent_llm()
+
 flashcard_agent = Agent(
     role="Flashcard Generator",
     goal="Turn refined Markdown notes into study flashcards",
     backstory="Expert at creating concise Q&A flashcards for students.",
     verbose=True,
-    allow_delegation=False
+    allow_delegation=False,
+    llm=_FLASHCARD_LLM,
 )
 
 flashcard_task = Task(

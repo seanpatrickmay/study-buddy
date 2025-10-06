@@ -8,7 +8,8 @@ import re
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional
 
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_anthropic import ChatAnthropic
+from study_buddy.services.voyage_embeddings import VoyageEmbeddings
 
 from study_buddy.config import settings
 from study_buddy.services.anki import AnkiDeckBuilder, AnkiDifficultyReader, DeckMetadata
@@ -28,7 +29,9 @@ class StudyWorkflow:
     """Coordinate document ingestion, enrichment, and artefact generation."""
 
     def __init__(self) -> None:
-        os.environ.setdefault("OPENAI_API_KEY", settings.openai_api_key)
+        os.environ.setdefault("ANTHROPIC_API_KEY", settings.anthropic_api_key)
+        if settings.voyage_api_key:
+            os.environ.setdefault("VOYAGE_API_KEY", settings.voyage_api_key)
         if settings.tavily_api_key:
             os.environ.setdefault("TAVILY_API_KEY", settings.tavily_api_key)
 
@@ -36,15 +39,18 @@ class StudyWorkflow:
         self._output_dir.mkdir(parents=True, exist_ok=True)
 
         self._document_loader = DocumentLoader(settings.firecrawl_api_key)
-        self._embeddings = OpenAIEmbeddings(
-            model=settings.embedding_model,
-            openai_api_key=settings.openai_api_key,
-        )
-        self._llm = ChatOpenAI(
+        if settings.voyage_api_key:
+            self._embeddings = VoyageEmbeddings(
+                api_key=settings.voyage_api_key,
+                model=settings.embedding_model,
+            )
+        else:
+            raise ValueError("VOYAGE_API_KEY is required for embeddings to operate.")
+        self._llm = ChatAnthropic(
             model=settings.llm_model,
             temperature=settings.llm_temperature,
             max_tokens=settings.max_tokens,
-            api_key=settings.openai_api_key,
+            api_key=settings.anthropic_api_key,
         )
         self._vector_store = VectorStoreManager(
             embeddings=self._embeddings,

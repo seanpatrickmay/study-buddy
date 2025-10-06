@@ -1,5 +1,10 @@
 from crewai import Agent, Task
 
+from study_buddy.agents import default_agent_llm
+
+
+_CHEATSHEET_LLM = default_agent_llm()
+
 cheatsheet_agent = Agent(
     role="Cheatsheet Generator",
     goal="Convert JSON flashcards into a one page reference sheet without inventing new facts",
@@ -8,7 +13,8 @@ cheatsheet_agent = Agent(
         "When something is unclear you leave space for downstream enrichment rather than guessing."
     ),
     verbose=True,
-    allow_delegation=True
+    allow_delegation=True,
+    llm=_CHEATSHEET_LLM,
 )
 
 cheatsheet_task = Task(

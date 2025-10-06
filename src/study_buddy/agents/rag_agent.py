@@ -1,25 +1,57 @@
 from crewai import Agent, Task
 import os
 from typing import List
+
 try:
     from langchain_chroma import Chroma
 except ImportError:
     from langchain_community.vectorstores import Chroma
-from langchain_openai import OpenAIEmbeddings
+from study_buddy.services.voyage_embeddings import VoyageEmbeddings
 from langchain.tools import tool
 from tavily import TavilyClient
 import chromadb
 
-# Initialize embeddings only if OpenAI API key is available
-_openai_key = os.environ.get("OPENAI_API_KEY")
-if _openai_key:
-    _embeddings = OpenAIEmbeddings(model="text-embedding-3-small", openai_api_key=_openai_key)
+from study_buddy.agents import default_agent_llm
+
+# Initialize embeddings only if Voyage API key is available
+_voyage_key = os.environ.get("VOYAGE_API_KEY")
+if _voyage_key:
+    _embeddings = VoyageEmbeddings(api_key=_voyage_key, model="voyage-3")
     # Use persistent directory instead of HTTP client to avoid port conflicts
-    _vs = Chroma(
-        collection_name="study_bot",
-        persist_directory="./chroma_db",
-        embedding_function=_embeddings
-    )
+    # Create collection name with embedding model suffix to avoid dimension conflicts
+    embedding_model_suffix = getattr(_embeddings, 'model', 'unknown').replace('-', '_')
+    collection_name = f"study_bot_{embedding_model_suffix}"
+
+    try:
+        _vs = Chroma(
+            collection_name=collection_name,
+            persist_directory="./chroma_db",
+            embedding_function=_embeddings
+        )
+    except Exception as e:
+        error_msg = str(e).lower()
+        should_recreate = any(keyword in error_msg for keyword in [
+            "dimension", "_type", "configuration", "keyerror", "incompatible"
+        ])
+
+        if should_recreate:
+            print(f"Warning: Database compatibility issue detected in RAG agent. Recreating vector database.")
+            print(f"Error details: {e}")
+            import shutil
+            from pathlib import Path
+            db_path = Path("./chroma_db")
+            if db_path.exists():
+                shutil.rmtree(db_path)
+                db_path.mkdir(parents=True, exist_ok=True)
+
+            _vs = Chroma(
+                collection_name=collection_name,
+                persist_directory="./chroma_db",
+                embedding_function=_embeddings
+            )
+            print(f"✓ New RAG vector database created with collection: {collection_name}")
+        else:
+            raise
     _retriever = _vs.as_retriever(search_kwargs={"k": 4})
 else:
     _embeddings = None
@@ -29,6 +61,8 @@ else:
 # Initialize Tavily client (optional if API key missing)
 _tavily_key = os.environ.get("TAVILY_API_KEY")
 _tavily = TavilyClient(api_key=_tavily_key) if _tavily_key else None
+
+_RAG_AGENT_LLM = default_agent_llm()
 
 @tool("tavily_search", return_direct=False)
 def _tavily_search(query: str, max_results: int = 5):
@@ -67,7 +101,8 @@ search_agent = Agent(
     goal="Find and summarize relevant information from the web.",
     backstory="Expert at quickly finding and summarizing web content via Tavily",
     tools=[],
-    allow_delegation=False
+    allow_delegation=False,
+    llm=_RAG_AGENT_LLM,
 )
 
 search_task = Task(
@@ -144,7 +179,7 @@ def enrich_from_web(query: str) -> str:
     Requires TAVILY_API_KEY and OPENAI_API_KEY to be set.
     """
     if _retriever is None:
-        return "Vector database not initialized. Please set OPENAI_API_KEY."
+        return "Vector database not initialized. Please set VOYAGE_API_KEY."
 
     status = _auto_enrich_from_web(query)
     # Optionally re-query to preview what's now in the DB
@@ -159,7 +194,7 @@ def chroma_search(query: str) -> str:
     enrich the DB via Tavily and retry, then return the results.
     """
     if _retriever is None:
-        return "Vector database not initialized. Please set OPENAI_API_KEY."
+        return "Vector database not initialized. Please set VOYAGE_API_KEY."
 
     docs = _retriever.get_relevant_documents(query)
     if docs:
@@ -183,6 +218,7 @@ web_enricher_agent = Agent(
     tools=[],
     verbose=True,
     allow_delegation=False,
+    llm=_RAG_AGENT_LLM,
 )
 
 rag_agent = Agent(
@@ -196,6 +232,7 @@ rag_agent = Agent(
     tools=[],
     verbose=True,
     allow_delegation=True,
+    llm=_RAG_AGENT_LLM,
 )
 
 # ---------- Tasks ----------

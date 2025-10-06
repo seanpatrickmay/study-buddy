@@ -1,6 +1,11 @@
 # Fixed agent approach with proper extraction and verification
 from crewai import Agent, Task
 
+from study_buddy.agents import default_agent_llm
+
+
+_TAV_AGENT_LLM = default_agent_llm()
+
 extraction_agent = Agent(
     role="Document Extraction Specialist",
     goal="Capture key ideas and vocabulary strictly from the supplied notes",
@@ -8,7 +13,8 @@ extraction_agent = Agent(
         "You carefully transcribe structure from study materials without inventing or embellishing."
     ),
     verbose=True,
-    allow_delegation=False
+    allow_delegation=False,
+    llm=_TAV_AGENT_LLM,
 )
 
 extraction_task = Task(
@@ -35,6 +41,7 @@ verification_agent = Agent(
     ),
     verbose=True,
     allow_delegation=False,
+    llm=_TAV_AGENT_LLM,
 )
 
 verification_task = Task(
@@ -47,7 +54,6 @@ verification_task = Task(
     agent=verification_agent,
     context=[extraction_task]
 )
-
 
 
 
